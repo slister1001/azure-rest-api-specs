@@ -1118,15 +1118,20 @@ union EvalRunOutputItemResultStatus {
     reason?: string,
 
     /** Additional details about the test criteria metric. */
-    properties?: Record<string>,
+    properties?: EvalRunOutputItemResultProperties,
   }
 );
 
-model EvalRunOutputItemResult is OpenAI.EvalRunOutputItemResult {
+/** Structured and evaluator-specific details attached to an evaluation result. */
+model EvalRunOutputItemResultProperties {
   /** Dimension judgments and the rubric's scoring decision. Present for evaluators using explicit rubric scoring. */
   @added(Versions.v1)
   rubric_scoring?: RubricScoringResult;
+
+  ...Record<string>;
 }
+
+model EvalRunOutputItemResult is OpenAI.EvalRunOutputItemResult;
 
 #suppress "@azure-tools/typespec-azure-core/experimental-feature" "Using experimental feature"
 @@changePropertyType(

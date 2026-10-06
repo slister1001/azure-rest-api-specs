@@ -45927,16 +45927,20 @@
             "description": "The reason for the test criteria metric."
           },
           "properties": {
-            "type": "object",
-            "unevaluatedProperties": {
-              "type": "string"
-            },
+            "$ref": "#/components/schemas/EvalRunOutputItemResultProperties",
             "description": "Additional details about the test criteria metric."
           }
         },
         "unevaluatedProperties": {},
         "description": "A single grader result for an evaluation run output item.",
         "title": "EvalRunOutputItemResult"
+      },
+      "EvalRunOutputItemResultProperties": {
+        "type": "object",
+        "unevaluatedProperties": {
+          "type": "string"
+        },
+        "description": "Structured and evaluator-specific details attached to an evaluation result."
       },
       "EvalRunOutputItemResultStatus": {
         "anyOf": [

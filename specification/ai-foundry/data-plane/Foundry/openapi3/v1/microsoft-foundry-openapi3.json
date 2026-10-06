@@ -38167,6 +38167,91 @@
         },
         "description": "Blob reference details."
       },
+      "BooleanRubricDimensionResult": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicable"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The dimension identifier."
+          },
+          "applicable": {
+            "type": "boolean",
+            "description": "Whether the dimension applies."
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
+          },
+          "effective_weight": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Normalized weight among applicable dimensions."
+          },
+          "contribution": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0)."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Brief evidence-based explanation."
+          },
+          "passed": {
+            "type": "boolean",
+            "description": "Boolean verdict. Required when the dimension is applicable; absent for N/A."
+          }
+        },
+        "description": "A Boolean result for one rubric dimension.",
+        "x-ms-foundry-meta": {
+          "required_previews": [
+            "Evaluations=V1Preview"
+          ]
+        }
+      },
+      "BooleanRubricScoringResult": {
+        "type": "object",
+        "required": [
+          "mode",
+          "dimension_results"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "boolean"
+            ]
+          },
+          "dimension_results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BooleanRubricDimensionResult"
+            },
+            "description": "One Boolean result for every configured dimension."
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RubricScoringResultBase"
+          }
+        ],
+        "description": "Explainable Boolean scoring results for a rubric.",
+        "x-ms-foundry-meta": {
+          "required_previews": [
+            "Evaluations=V1Preview"
+          ]
+        }
+      },
       "BotServiceAuthorizationScheme": {
         "type": "object",
         "required": [
@@ -41382,20 +41467,26 @@
             "description": "The reason for the test criteria metric."
           },
           "properties": {
-            "type": "object",
-            "unevaluatedProperties": {
-              "type": "string"
-            },
+            "$ref": "#/components/schemas/EvalRunOutputItemResultProperties",
             "description": "Additional details about the test criteria metric."
-          },
-          "rubric_scoring": {
-            "$ref": "#/components/schemas/RubricScoringResult",
-            "description": "Dimension judgments and the rubric's scoring decision. Present for evaluators using explicit rubric scoring."
           }
         },
         "unevaluatedProperties": {},
         "description": "A single grader result for an evaluation run output item.",
         "title": "EvalRunOutputItemResult"
+      },
+      "EvalRunOutputItemResultProperties": {
+        "type": "object",
+        "properties": {
+          "rubric_scoring": {
+            "$ref": "#/components/schemas/RubricScoringResult",
+            "description": "Dimension judgments and the rubric's scoring decision. Present for evaluators using explicit rubric scoring."
+          }
+        },
+        "unevaluatedProperties": {
+          "type": "string"
+        },
+        "description": "Structured and evaluator-specific details attached to an evaluation result."
       },
       "EvalRunOutputItemResultStatus": {
         "anyOf": [
@@ -44772,6 +44863,94 @@
           }
         },
         "description": "Run-wide end-to-end latency percentiles for the evaluation target."
+      },
+      "LikertRubricDimensionResult": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicable"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The dimension identifier."
+          },
+          "applicable": {
+            "type": "boolean",
+            "description": "Whether the dimension applies."
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
+          },
+          "effective_weight": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Normalized weight among applicable dimensions."
+          },
+          "contribution": {
+            "type": "number",
+            "format": "double",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0)."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Brief evidence-based explanation."
+          },
+          "raw_score": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "Applicable Likert grade. Absent for N/A."
+          }
+        },
+        "description": "A Likert result for one rubric dimension.",
+        "x-ms-foundry-meta": {
+          "required_previews": [
+            "Evaluations=V1Preview"
+          ]
+        }
+      },
+      "LikertRubricScoringResult": {
+        "type": "object",
+        "required": [
+          "mode",
+          "dimension_results"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "likert"
+            ]
+          },
+          "dimension_results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LikertRubricDimensionResult"
+            },
+            "description": "One Likert result for every configured dimension."
+          }
+        },
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RubricScoringResultBase"
+          }
+        ],
+        "description": "Explainable Likert scoring results for a rubric.",
+        "x-ms-foundry-meta": {
+          "required_previews": [
+            "Evaluations=V1Preview"
+          ]
+        }
       },
       "LoraConfig": {
         "type": "object",
@@ -87659,65 +87838,6 @@
         ],
         "description": "Rubric-based evaluator definition — stores dimensions produced by the generate API. Used for both quality and safety evaluators."
       },
-      "RubricDimensionResult": {
-        "type": "object",
-        "required": [
-          "id",
-          "applicable"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "The dimension identifier."
-          },
-          "applicable": {
-            "type": "boolean",
-            "description": "Whether the dimension applies."
-          },
-          "passed": {
-            "type": "boolean",
-            "description": "Boolean verdict. Required when a Boolean dimension is applicable; absent for N/A and rating dimensions."
-          },
-          "raw_score": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 1,
-            "maximum": 5,
-            "description": "Applicable Likert grade. Absent for Boolean dimensions."
-          },
-          "weight": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 1,
-            "maximum": 10,
-            "description": "Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
-          },
-          "effective_weight": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Normalized weight among applicable dimensions."
-          },
-          "contribution": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0)."
-          },
-          "reason": {
-            "type": "string",
-            "description": "Brief evidence-based explanation."
-          }
-        },
-        "description": "A typed result for one dimension in the unified rubric.",
-        "x-ms-foundry-meta": {
-          "required_previews": [
-            "Evaluations=V1Preview"
-          ]
-        }
-      },
       "RubricGenerationInputQualityWarning": {
         "type": "object",
         "required": [
@@ -87821,18 +87941,11 @@
         }
       },
       "RubricScoringDecision": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "string",
-            "enum": [
-              "pass",
-              "fail",
-              "not_applicable"
-            ]
-          }
+        "type": "string",
+        "enum": [
+          "pass",
+          "fail",
+          "not_applicable"
         ],
         "description": "The deterministic overall rubric acceptance decision.",
         "x-ms-foundry-meta": {
@@ -87842,17 +87955,10 @@
         }
       },
       "RubricScoringMode": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "string",
-            "enum": [
-              "boolean",
-              "likert"
-            ]
-          }
+        "type": "string",
+        "enum": [
+          "boolean",
+          "likert"
         ],
         "description": "The quality-scoring mode selected for an entire rubric.",
         "x-ms-foundry-meta": {
@@ -87862,16 +87968,31 @@
         }
       },
       "RubricScoringResult": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/BooleanRubricScoringResult"
+          },
+          {
+            "$ref": "#/components/schemas/LikertRubricScoringResult"
+          }
+        ],
+        "description": "A mode-discriminated Boolean or Likert rubric scoring result.",
+        "x-ms-foundry-meta": {
+          "required_previews": [
+            "Evaluations=V1Preview"
+          ]
+        }
+      },
+      "RubricScoringResultBase": {
         "type": "object",
         "required": [
           "mode",
-          "decision",
-          "dimension_results"
+          "decision"
         ],
         "properties": {
           "mode": {
             "$ref": "#/components/schemas/RubricScoringMode",
-            "description": "The resolved scoring mode."
+            "description": "The resolved scoring mode discriminator."
           },
           "quality_score": {
             "type": "number",
@@ -87894,16 +88015,16 @@
           "decision": {
             "$ref": "#/components/schemas/RubricScoringDecision",
             "description": "Overall decision from the selected scoring rule."
-          },
-          "dimension_results": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/RubricDimensionResult"
-            },
-            "description": "One result list for every dimension, using the rubric's scoring mode."
           }
         },
-        "description": "Explainable scoring results for a rubric. Both Boolean and Likert modes compare a normalized optional weighted average with the threshold.",
+        "discriminator": {
+          "propertyName": "mode",
+          "mapping": {
+            "likert": "#/components/schemas/LikertRubricScoringResult",
+            "boolean": "#/components/schemas/BooleanRubricScoringResult"
+          }
+        },
+        "description": "Fields shared by Boolean and Likert scoring results for a rubric.",
         "x-ms-foundry-meta": {
           "required_previews": [
             "Evaluations=V1Preview"

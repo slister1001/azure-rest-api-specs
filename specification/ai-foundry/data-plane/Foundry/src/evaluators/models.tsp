@@ -134,8 +134,6 @@ const RubricScoringRequiredPreviews = #{
 @added(Versions.v1)
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
 union RubricScoringMode {
-  string,
-
   @doc("Score applicable checks as pass=1 and fail=0, then compare their optional weighted average with the rubric threshold.")
   boolean: "boolean",
 
@@ -155,8 +153,6 @@ model RubricScoring {
 @added(Versions.v1)
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
 union RubricScoringDecision {
-  string,
-
   @doc("Applicable dimensions meet the selected scoring rule.")
   pass: "pass",
 
@@ -167,11 +163,12 @@ union RubricScoringDecision {
   not_applicable: "not_applicable",
 }
 
-@doc("Explainable scoring results for a rubric. Both Boolean and Likert modes compare a normalized optional weighted average with the threshold.")
+@doc("Fields shared by Boolean and Likert scoring results for a rubric.")
 @added(Versions.v1)
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
-model RubricScoringResult {
-  @doc("The resolved scoring mode.")
+@discriminator("mode")
+model RubricScoringResultBase {
+  @doc("The resolved scoring mode discriminator.")
   mode: RubricScoringMode;
 
   @doc("Quality score, equal to the top-level score when known. Likert grades are normalized to 0-1; Boolean verdicts contribute pass=1 and fail=0. N/A dimensions are excluded. Absent when no dimension applies.")
@@ -189,12 +186,9 @@ model RubricScoringResult {
 
   @doc("Overall decision from the selected scoring rule.")
   decision: RubricScoringDecision;
-
-  @doc("One result list for every dimension, using the rubric's scoring mode.")
-  dimension_results: RubricDimensionResult[];
 }
 
-@doc("A typed result for one dimension in the unified rubric.")
+@doc("Fields shared by Boolean and Likert results for one rubric dimension.")
 @added(Versions.v1)
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
 model RubricDimensionResult {
@@ -203,14 +197,6 @@ model RubricDimensionResult {
 
   @doc("Whether the dimension applies.")
   applicable: boolean;
-
-  @doc("Boolean verdict. Required when a Boolean dimension is applicable; absent for N/A and rating dimensions.")
-  passed?: boolean;
-
-  @doc("Applicable Likert grade. Absent for Boolean dimensions.")
-  @minValue(1)
-  @maxValue(5)
-  raw_score?: int32;
 
   @doc("Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight.")
   @minValue(1)
@@ -229,6 +215,57 @@ model RubricDimensionResult {
 
   @doc("Brief evidence-based explanation.")
   reason?: string;
+}
+
+@doc("A Boolean result for one rubric dimension.")
+@added(Versions.v1)
+@extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
+model BooleanRubricDimensionResult {
+  ...RubricDimensionResult;
+
+  @doc("Boolean verdict. Required when the dimension is applicable; absent for N/A.")
+  passed?: boolean;
+}
+
+@doc("A Likert result for one rubric dimension.")
+@added(Versions.v1)
+@extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
+model LikertRubricDimensionResult {
+  ...RubricDimensionResult;
+
+  @doc("Applicable Likert grade. Absent for N/A.")
+  @minValue(1)
+  @maxValue(5)
+  raw_score?: int32;
+}
+
+@doc("Explainable Boolean scoring results for a rubric.")
+@added(Versions.v1)
+@extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
+model BooleanRubricScoringResult extends RubricScoringResultBase {
+  mode: RubricScoringMode.boolean;
+
+  @doc("One Boolean result for every configured dimension.")
+  dimension_results: BooleanRubricDimensionResult[];
+}
+
+@doc("Explainable Likert scoring results for a rubric.")
+@added(Versions.v1)
+@extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
+model LikertRubricScoringResult extends RubricScoringResultBase {
+  mode: RubricScoringMode.likert;
+
+  @doc("One Likert result for every configured dimension.")
+  dimension_results: LikertRubricDimensionResult[];
+}
+
+@doc("A mode-discriminated Boolean or Likert rubric scoring result.")
+@added(Versions.v1)
+@extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
+@oneOf
+union RubricScoringResult {
+  boolean: BooleanRubricScoringResult,
+  likert: LikertRubricScoringResult,
 }
 
 @doc("A single dimension — one independent, measurable quality dimension within a rubric evaluator's scoring blueprint.")
