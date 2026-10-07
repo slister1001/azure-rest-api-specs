@@ -82316,21 +82316,6 @@ components:
         mode:
           $ref: '#/components/schemas/RubricScoringMode'
           description: The resolved scoring mode discriminator.
-        quality_score:
-          type: number
-          format: double
-          minimum: 0
-          maximum: 1
-          description: Quality score, equal to the top-level score when known. Likert grades are normalized to 0-1; Boolean verdicts contribute pass=1 and fail=0. N/A dimensions are excluded. Absent when no dimension applies.
-        quality_passed:
-          type: boolean
-          description: Whether the quality score meets its threshold. Absent when quality is unavailable.
-        quality_threshold:
-          type: number
-          format: float
-          minimum: 0
-          maximum: 1
-          description: The resolved threshold used for both modes. Defaults to 0.5 when omitted from the evaluator definition.
         decision:
           $ref: '#/components/schemas/RubricScoringDecision'
           description: Overall decision from the selected scoring rule.

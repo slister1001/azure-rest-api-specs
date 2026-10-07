@@ -159,7 +159,7 @@ union RubricScoringDecision {
   @doc("The selected scoring rule fails.")
   fail: "fail",
 
-  @doc("No quality dimension applies.")
+  @doc("No rubric dimension applies.")
   not_applicable: "not_applicable",
 }
 
@@ -170,19 +170,6 @@ union RubricScoringDecision {
 model RubricScoringResultBase {
   @doc("The resolved scoring mode discriminator.")
   mode: RubricScoringMode;
-
-  @doc("Quality score, equal to the top-level score when known. Likert grades are normalized to 0-1; Boolean verdicts contribute pass=1 and fail=0. N/A dimensions are excluded. Absent when no dimension applies.")
-  @minValue(0)
-  @maxValue(1)
-  quality_score?: float64;
-
-  @doc("Whether the quality score meets its threshold. Absent when quality is unavailable.")
-  quality_passed?: boolean;
-
-  @doc("The resolved threshold used for both modes. Defaults to 0.5 when omitted from the evaluator definition.")
-  @minValue(0)
-  @maxValue(1)
-  quality_threshold?: float32;
 
   @doc("Overall decision from the selected scoring rule.")
   decision: RubricScoringDecision;
