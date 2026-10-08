@@ -45260,7 +45260,7 @@
             "default": false
           }
         },
-        "description": "A single dimension — one independent, measurable quality dimension within a rubric evaluator's scoring blueprint."
+        "description": "A single dimension — one independent, measurable criterion within a rubric evaluator's scoring blueprint."
       },
       "DispatchRoutineRequest": {
         "type": "object",
@@ -93219,7 +93219,7 @@
             "items": {
               "$ref": "#/components/schemas/Dimension"
             },
-            "description": "The quality checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior."
+            "description": "The rubric checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior."
           },
           "pass_threshold": {
             "type": "number",

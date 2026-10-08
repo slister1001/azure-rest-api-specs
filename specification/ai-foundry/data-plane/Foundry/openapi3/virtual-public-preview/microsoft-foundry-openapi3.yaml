@@ -51102,7 +51102,7 @@ components:
           type: boolean
           description: When true, the LLM judge always scores this dimension regardless of relevance (skips applicability assessment). The service-generated general quality/policy dimension has this set to true and is non-editable. Users may set this on their own custom dimensions. The service defaults to `false` if a value is not specified by the caller.
           default: false
-      description: A single dimension — one independent, measurable quality dimension within a rubric evaluator's scoring blueprint.
+      description: A single dimension — one independent, measurable criterion within a rubric evaluator's scoring blueprint.
     DispatchRoutineRequest:
       type: object
       properties:
@@ -85912,7 +85912,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Dimension'
-          description: The quality checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior.
+          description: The rubric checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior.
         pass_threshold:
           type: number
           format: float

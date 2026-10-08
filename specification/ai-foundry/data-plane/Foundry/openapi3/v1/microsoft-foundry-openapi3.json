@@ -38182,27 +38182,6 @@
             "type": "boolean",
             "description": "Whether the dimension applies."
           },
-          "weight": {
-            "type": "integer",
-            "format": "int32",
-            "minimum": 1,
-            "maximum": 10,
-            "description": "Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
-          },
-          "effective_weight": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Normalized weight among applicable dimensions."
-          },
-          "contribution": {
-            "type": "number",
-            "format": "double",
-            "minimum": 0,
-            "maximum": 1,
-            "description": "Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0)."
-          },
           "reason": {
             "type": "string",
             "description": "Brief evidence-based explanation."
@@ -40792,7 +40771,7 @@
             "format": "int32",
             "minimum": 1,
             "maximum": 10,
-            "description": "Optional configured weight for either scoring mode. Omit every weight for equal contribution or supply a weight for every dimension. Partially weighted definitions are rejected, including a mix of explicit unit weights and omitted weights. No schema default is emitted."
+            "description": "Optional configured weight for legacy or Likert scoring. For Likert, omit every weight for equal contribution or supply a weight for every dimension; partially weighted definitions are rejected. Boolean scoring rejects every configured weight, including explicit unit weights. No schema default is emitted."
           },
           "always_applicable": {
             "type": "boolean",
@@ -40800,7 +40779,7 @@
             "default": false
           }
         },
-        "description": "A single dimension — one independent, measurable quality dimension within a rubric evaluator's scoring blueprint."
+        "description": "A single dimension — one independent, measurable criterion within a rubric evaluator's scoring blueprint."
       },
       "DispatchRoutineRequest": {
         "type": "object",
@@ -42581,7 +42560,7 @@
             "format": "float",
             "minimum": 0,
             "maximum": 1,
-            "description": "Optional threshold on the normalized 0-1 scale. Omission is interpreted as 0.5 for fresh generation and inherits the saved threshold on regeneration. An explicit value overrides the prior threshold."
+            "description": "Optional normalized Likert threshold: omission uses 0.5 for fresh generation and inherits the saved threshold on regeneration. For Boolean generation, omit this field or set it to 1; other values are rejected and its all-pass threshold is fixed at 1."
           },
           "dimensions": {
             "type": "array",
@@ -44879,30 +44858,30 @@
             "type": "boolean",
             "description": "Whether the dimension applies."
           },
+          "reason": {
+            "type": "string",
+            "description": "Brief evidence-based explanation."
+          },
           "weight": {
             "type": "integer",
             "format": "int32",
             "minimum": 1,
             "maximum": 10,
-            "description": "Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
+            "description": "Explicitly configured Likert weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight."
           },
           "effective_weight": {
             "type": "number",
             "format": "double",
             "minimum": 0,
             "maximum": 1,
-            "description": "Normalized weight among applicable dimensions."
+            "description": "Normalized weight among applicable Likert dimensions."
           },
           "contribution": {
             "type": "number",
             "format": "double",
             "minimum": 0,
             "maximum": 1,
-            "description": "Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0)."
-          },
-          "reason": {
-            "type": "string",
-            "description": "Brief evidence-based explanation."
+            "description": "Contribution to the normalized Likert aggregate: effective_weight * (raw_score - 1) / 4."
           },
           "raw_score": {
             "type": "integer",
@@ -87817,14 +87796,14 @@
             "items": {
               "$ref": "#/components/schemas/Dimension"
             },
-            "description": "The quality checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior."
+            "description": "The rubric checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior."
           },
           "pass_threshold": {
             "type": "number",
             "format": "float",
             "minimum": 0,
             "maximum": 1,
-            "description": "Optional threshold on the normalized 0-1 scale for either scoring mode, interpreted as 0.5 when omitted."
+            "description": "Optional normalized threshold for Likert scoring, interpreted as 0.5 when omitted. Boolean scoring requires all applicable checks to pass: omit this field or set it to 1; its effective threshold is 1 and other values are rejected."
           },
           "scoring": {
             "$ref": "#/components/schemas/RubricScoring",
@@ -87960,7 +87939,7 @@
           "boolean",
           "likert"
         ],
-        "description": "The quality-scoring mode selected for an entire rubric.",
+        "description": "The scoring mode selected for an entire rubric.",
         "x-ms-foundry-meta": {
           "required_previews": [
             "Evaluations=V1Preview"

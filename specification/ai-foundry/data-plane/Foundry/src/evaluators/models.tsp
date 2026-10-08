@@ -130,14 +130,14 @@ const RubricScoringRequiredPreviews = #{
   required_previews: #[FoundryFeaturesOptInKeys.evaluations_v1_preview],
 };
 
-@doc("The quality-scoring mode selected for an entire rubric.")
+@doc("The scoring mode selected for an entire rubric.")
 @added(Versions.v1)
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
 union RubricScoringMode {
-  @doc("Score applicable checks as pass=1 and fail=0, then compare their optional weighted average with the rubric threshold.")
+  @doc("Require every applicable check to pass. Any failed check fails the rubric. Configured dimension weights are not supported; pass_threshold must be omitted or 1. The aggregate score is 1 for pass or 0 for fail.")
   boolean: "boolean",
 
-  @doc("Grade applicable quality dimensions from 1 through 5, with optional relative weights.")
+  @doc("Grade applicable rubric dimensions from 1 through 5, with optional relative weights.")
   likert: "likert",
 }
 
@@ -185,21 +185,6 @@ model RubricDimensionResult {
   @doc("Whether the dimension applies.")
   applicable: boolean;
 
-  @doc("Explicitly configured weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight.")
-  @minValue(1)
-  @maxValue(10)
-  weight?: int32;
-
-  @doc("Normalized weight among applicable dimensions.")
-  @minValue(0)
-  @maxValue(1)
-  effective_weight?: float64;
-
-  @doc("Contribution to the normalized aggregate. Likert uses effective_weight * (raw_score - 1) / 4; Boolean uses effective_weight * (passed ? 1 : 0).")
-  @minValue(0)
-  @maxValue(1)
-  contribution?: float64;
-
   @doc("Brief evidence-based explanation.")
   reason?: string;
 }
@@ -219,6 +204,21 @@ model BooleanRubricDimensionResult {
 @extension("x-ms-foundry-meta", RubricScoringRequiredPreviews)
 model LikertRubricDimensionResult {
   ...RubricDimensionResult;
+
+  @doc("Explicitly configured Likert weight. Omitted for every dimension when weights are implicit. If configured, every dimension includes a weight.")
+  @minValue(1)
+  @maxValue(10)
+  weight?: int32;
+
+  @doc("Normalized weight among applicable Likert dimensions.")
+  @minValue(0)
+  @maxValue(1)
+  effective_weight?: float64;
+
+  @doc("Contribution to the normalized Likert aggregate: effective_weight * (raw_score - 1) / 4.")
+  @minValue(0)
+  @maxValue(1)
+  contribution?: float64;
 
   @doc("Applicable Likert grade. Absent for N/A.")
   @minValue(1)
@@ -255,7 +255,7 @@ union RubricScoringResult {
   likert: LikertRubricScoringResult,
 }
 
-@doc("A single dimension — one independent, measurable quality dimension within a rubric evaluator's scoring blueprint.")
+@doc("A single dimension — one independent, measurable criterion within a rubric evaluator's scoring blueprint.")
 model Dimension {
   @doc("Stable identifier for this dimension (snake_case, e.g., `correct_resolution`). Required. Provided by the user when manually creating a rubric evaluator or during human-in-the-loop review of a generated set; the generation pipeline produces an initial value the user can edit. Editable when saving new versions.")
   id: string;
@@ -270,7 +270,7 @@ model Dimension {
   @maxValue(10)
   legacy_weight: int32;
 
-  @doc("Optional configured weight for either scoring mode. Omit every weight for equal contribution or supply a weight for every dimension. Partially weighted definitions are rejected, including a mix of explicit unit weights and omitted weights. No schema default is emitted.")
+  @doc("Optional configured weight for legacy or Likert scoring. For Likert, omit every weight for equal contribution or supply a weight for every dimension; partially weighted definitions are rejected. Boolean scoring rejects every configured weight, including explicit unit weights. No schema default is emitted.")
   @added(Versions.v1)
   @minValue(1)
   @maxValue(10)
@@ -284,7 +284,7 @@ model Dimension {
 model RubricBasedEvaluatorDefinition extends EvaluatorDefinition {
   type: EvaluatorDefinitionType.rubric;
 
-  @doc("The quality checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior.")
+  @doc("The rubric checks or grading criteria. Rating generation includes a service residual; Boolean generation does not inject a generic residual. Existing v1 and legacy definitions retain their behavior.")
   dimensions: Dimension[];
 
   @doc("Quality threshold on the same normalized 0.0-1.0 scale as the emitted score. Defaults to 0.5, equivalent to a raw weighted grade of 3.0. The score >= threshold determines pass/fail; there is no implicit score-1 veto.")
@@ -294,7 +294,7 @@ model RubricBasedEvaluatorDefinition extends EvaluatorDefinition {
   @maxValue(1.0)
   legacy_pass_threshold?: float32 = 0.5;
 
-  @doc("Optional threshold on the normalized 0-1 scale for either scoring mode, interpreted as 0.5 when omitted.")
+  @doc("Optional normalized threshold for Likert scoring, interpreted as 0.5 when omitted. Boolean scoring requires all applicable checks to pass: omit this field or set it to 1; its effective threshold is 1 and other values are rejected.")
   @added(Versions.v1)
   @minValue(0.0)
   @maxValue(1.0)
@@ -420,7 +420,7 @@ model EvaluatorGenerationInputs {
   @added(Versions.v1)
   scoring?: RubricScoring;
 
-  @doc("Optional threshold on the normalized 0-1 scale. Omission is interpreted as 0.5 for fresh generation and inherits the saved threshold on regeneration. An explicit value overrides the prior threshold.")
+  @doc("Optional normalized Likert threshold: omission uses 0.5 for fresh generation and inherits the saved threshold on regeneration. For Boolean generation, omit this field or set it to 1; other values are rejected and its all-pass threshold is fixed at 1.")
   @added(Versions.v1)
   @minValue(0.0)
   @maxValue(1.0)
